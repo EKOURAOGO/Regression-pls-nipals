@@ -1,8 +1,8 @@
-# Dynamiques Électorales & Régression PLS — Présidentielle 2022
+# Dynamiques Électorales & Régression PLS - Présidentielle 2022
 
 > Analyse départementale par régression PLS (Partial Least Squares)  
 > Anticipation du second tour à partir des résultats du premier tour  
-> Master 2 IMSD · Université Paris-Saclay / Évry · 2025-2026
+
 
 ---
 
@@ -47,7 +47,7 @@ Regression-pls-nipals/
 |---------|----------|
 | MCO | Régression linéaire standard |
 | PCR | Composantes principales de X puis régression |
-| PLS1 | Composantes maximisant cov(X, y) — validation croisée LOO |
+| PLS1 | Composantes maximisant cov(X, y) - validation croisée LOO |
 | PLS2 | Réponse simultanée sur 4 variables T2 |
 | ACP | T1, T2 et conjointe T1+T2 |
 | VIF | Détection multicolinéarité structurelle |
@@ -114,8 +114,8 @@ source("PLS_3_4.R")
 
 ## Auteur
 
-**KOURAOGO Emmanuel** — M2 IMSD · Paris-Saclay  
-Data Scientist & Data Analyst · DREES
+**KOURAOGO Emmanuel** 
+Data Scientist & Data Analyst 
 
 [![GitHub](https://img.shields.io/badge/GitHub-EKOURAOGO-181717?style=flat-square&logo=github)](https://github.com/EKOURAOGO)
 
