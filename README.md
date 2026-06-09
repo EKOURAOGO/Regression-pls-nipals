@@ -1,18 +1,31 @@
-# Régression PLS-NIPALS en R
+# Dynamiques Électorales & Régression PLS — Présidentielle 2022
 
-> Régression PLS (Partial Least Squares) via l'algorithme NIPALS  
-> Application sur les résultats de l'élection présidentielle 2022  
-> Master 2 IMSD · Paris-Saclay · 2025-2026
+> Analyse départementale par régression PLS (Partial Least Squares)  
+> Anticipation du second tour à partir des résultats du premier tour  
+> Master 2 IMSD · Université Paris-Saclay / Évry · 2025-2026
 
 ---
 
 ## Contexte
 
-Ce projet applique la **régression PLS-NIPALS** à des données socio-économiques départementales
-pour expliquer les résultats du premier tour de l'**élection présidentielle française 2022**.
+L'élection présidentielle française de 2022 a mis en évidence de fortes **disparités territoriales** dans les comportements électoraux. Ce projet analyse dans quelle mesure les résultats du **premier tour** permettent d'expliquer et d'anticiper ceux du **second tour** à l'échelle départementale.
 
-Problématique centrale : comment les caractéristiques socio-économiques des départements
-(chômage, revenus, densité, niveau d'éducation...) expliquent-elles les scores des candidats ?
+**Question centrale :** Le premier tour structure-t-il fortement le second, ou observe-t-on des recompositions plus complexes selon les territoires ?
+
+En raison de la nature **compositionnelle** des données électorales (multicolinéarité structurelle), ce projet compare trois approches : **MCO**, **PCR** et **PLS**, avant de conduire une modélisation multivariée par **PLS2**.
+
+> Encadrant : Christian DERQUENNE
+
+---
+
+## Données
+
+| Caractéristique | Valeur |
+|---|---|
+| Unité d'observation | Département |
+| Nombre d'unités | 107 (métropole + DOM-TOM + Français de l'étranger) |
+| Candidats T1 | 12 (Macron, Le Pen, Mélenchon, Zemmour, Pécresse...) |
+| Variables réponses T2 | p_abst2, p_blanc2, p_macron2, p_lepen2 |
 
 ---
 
@@ -20,9 +33,9 @@ Problématique centrale : comment les caractéristiques socio-économiques des d
 
 ```
 Regression-pls-nipals/
-├── PLS1_2.R                   # PLS1 et PLS2 — algorithme NIPALS, composantes, R²
-├── PLS_3_4.R                  # PLS3 et PLS4 — validation croisée, scores optimaux
-├── PROJET_PLS_EMMANUEL.pdf    # Rapport complet
+├── PLS1_2.R                   # PLS1 + PLS2, ACP, MCO, PCR, VIP, validation croisée LOO
+├── PLS_3_4.R                  # PLS2 multivariée, Hotelling, départements atypiques
+├── PROJET_PLS_EMMANUEL.pdf    # Rapport complet (25 pages)
 └── README.md
 ```
 
@@ -30,41 +43,59 @@ Regression-pls-nipals/
 
 ## Méthodes implémentées
 
-### PLS1 — Une seule variable réponse
-- Algorithme NIPALS implémenté manuellement en R
-- Déflation des matrices X et Y
-- Sélection du nombre de composantes par **validation croisée**
-- R² cumulé, coefficients de régression, importance des variables (VIP)
-
-### PLS2 — Plusieurs variables réponses simultanées
-- Extension PLS1 à plusieurs candidats simultanément
-- Cercle des corrélations (variables explicatives vs scores des candidats)
-- Biplot composantes / départements
-
-### Analyse comparative
-- Comparaison PLS vs régression linéaire classique
-- Gestion de la **multicolinéarité** entre variables socio-économiques
-- Stabilité des composantes par bootstrap
+| Méthode | Principe |
+|---------|----------|
+| MCO | Régression linéaire standard |
+| PCR | Composantes principales de X puis régression |
+| PLS1 | Composantes maximisant cov(X, y) — validation croisée LOO |
+| PLS2 | Réponse simultanée sur 4 variables T2 |
+| ACP | T1, T2 et conjointe T1+T2 |
+| VIF | Détection multicolinéarité structurelle |
+| Hotelling | Détection des départements atypiques |
 
 ---
 
-## Dataset — Élection présidentielle 2022
+## Principaux résultats
 
-| Variable | Type | Description |
-|----------|------|-------------|
-| Score candidats | Réponse (Y) | % voix par département au 1er tour |
-| Chômage | Explicative (X) | Taux de chômage départemental |
-| Revenu médian | Explicative (X) | Revenu médian par UC |
-| Densité | Explicative (X) | Densité de population |
-| Niveau éducation | Explicative (X) | % diplômés supérieur |
-| ... | ... | Variables socio-économiques départementales |
+### Multicolinéarité structurelle
+
+| Variable | VIF |
+|---|---|
+| p_abst1 | **1950.62** |
+| p_LE_PEN_1 | 465.33 |
+| p_MACRON_1 | 316.54 |
+
+→ Justifie pleinement le recours à PLS.
+
+### Comparaison MCO / PCR / PLS1
+
+| Variable | R² MCO | Q² PCR | Q² PLS1 | Optimal |
+|---|---|---|---|---|
+| p_abst2 | 0.984 | 0.980 | 0.979 | PCR ≈ PLS |
+| p_blanc2 | 0.946 | 0.865 | 0.828 | **PCR** |
+| p_macron2 | 0.981 | 0.952 | **0.963** | **PLS1** |
+| p_lepen2 | 0.941 | 0.907 | **0.909** | **PLS1** |
+
+### PLS2 multivariée (Q²)
+
+| Variable | Q² |
+|---|---|
+| p_abst2 | 0.9799 |
+| p_macron2 | 0.9574 |
+| p_lepen2 | 0.9116 |
+| p_blanc2 | 0.7995 |
+
+**Composante 1** → axe de mobilisation électorale (abstention vs vote)  
+**Composante 2** → axe de différenciation politique (Le Pen vs Mélenchon/Macron/Jadot)
 
 ---
 
 ## Installation
 
 ```r
-install.packages(c("pls", "ggplot2", "corrplot", "dplyr", "tidyr", "MASS"))
+install.packages(c("pls", "FactoMineR", "factoextra", "corrplot",
+                   "car", "ggplot2", "dplyr", "tidyr", "ggrepel"))
+
 source("PLS1_2.R")
 source("PLS_3_4.R")
 ```
@@ -74,9 +105,10 @@ source("PLS_3_4.R")
 ## Stack technique
 
 ![R](https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white)
-![pls](https://img.shields.io/badge/pls-NIPALS-blue?style=flat-square)
+![pls](https://img.shields.io/badge/pls-PLS1%20·%20PLS2%20·%20PCR-blue?style=flat-square)
+![FactoMineR](https://img.shields.io/badge/FactoMineR-ACP-orange?style=flat-square)
 ![ggplot2](https://img.shields.io/badge/ggplot2-visualization-red?style=flat-square)
-![tidyverse](https://img.shields.io/badge/tidyverse-276DC3?style=flat-square)
+![car](https://img.shields.io/badge/car-VIF-green?style=flat-square)
 
 ---
 
@@ -86,3 +118,5 @@ source("PLS_3_4.R")
 Data Scientist & Data Analyst · DREES
 
 [![GitHub](https://img.shields.io/badge/GitHub-EKOURAOGO-181717?style=flat-square&logo=github)](https://github.com/EKOURAOGO)
+
+*Encadrant : Christian DERQUENNE · 2025-2026*
