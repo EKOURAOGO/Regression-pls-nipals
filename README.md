@@ -1,4 +1,4 @@
-# Dynamiques Électorales & Régression PLS - Présidentielle 2022
+# Dynamiques électorales & Régression PLS - Présidentielle 2022
 
 > Analyse départementale par régression PLS (Partial Least Squares)  
 > Anticipation du second tour à partir des résultats du premier tour  
